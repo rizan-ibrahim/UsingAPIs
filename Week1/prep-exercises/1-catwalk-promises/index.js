@@ -8,33 +8,51 @@ const DANCING_CAT_URL =
 
 function walk(img, startPos, stopPos) {
   return new Promise((resolve) => {
-    // Resolve this promise when the cat (`img`) has walked from `startPos` to
-    // `stopPos`.
-    // Make good use of the `STEP_INTERVAL_PX` and `STEP_INTERVAL_MS`
-    // constants.
+    let position = startPos;
+    img.style.left = position + 'px';
+
+    function step() {
+      if (position < stopPos) {
+        position += STEP_SIZE_PX;
+        img.style.left = position + 'px';
+        setTimeout(step, STEP_INTERVAL_MS);
+      } else {
+        resolve(); // Resolve when the cat reaches the stop position
+      }
+    }
+
+    step();
+    
   });
 }
 
 function dance(img) {
   return new Promise((resolve) => {
-    // Switch the `.src` of the `img` from the walking cat to the dancing cat
-    // and, after a timeout, reset the `img` back to the walking cat. Then
-    // resolve the promise.
-    // Make good use of the `DANCING_CAT_URL` and `DANCE_TIME_MS` constants.
+    const originalSrc = img.src;
+    img.src = DANCING_CAT_URL;
+
+    setTimeout(() => {
+      img.src = originalSrc;
+      resolve();
+    }, DANCE_TIME_MS);
+   
   });
 }
 
-function catWalk() {
+async function catWalk() {
   const img = document.querySelector('img');
   const startPos = -img.width;
   const centerPos = (window.innerWidth - img.width) / 2;
   const stopPos = window.innerWidth;
 
-  // Use the `walk()` and `dance()` functions to let the cat do the following:
-  // 1. Walk from `startPos` to `centerPos`.
-  // 2. Then dance for 5 secs.
-  // 3. Then walk from `centerPos` to `stopPos`.
-  // 4. Repeat the first three steps indefinitely.
+  
+  while (true) {
+    await walk(img, startPos, centerPos);
+    await dance(img);
+    await walk(img, centerPos, stopPos);
+  }
+
+ 
 }
 
 window.addEventListener('load', catWalk);
